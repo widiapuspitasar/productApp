@@ -10,7 +10,8 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
     "lint": "eslint . --fix",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "start": "json-server --watch db.json --port 3000"
   },
   "dependencies": {
     "@heroicons/vue": "^2.2.0",
