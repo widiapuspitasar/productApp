@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { defineProps, ref, onMounted, watch, nextTick } from 'vue';
-import { Chart as ChartJS, Chart, Title, Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Filler, LineController, Gradient } from 'chart.js';
+import { Chart as ChartJS, Chart, Title, Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Filler, LineController, type ScriptableContext } from 'chart.js';
 
-// Register all necessary Chart.js components
 ChartJS.register(
   Title,
   Tooltip,
@@ -13,7 +12,7 @@ ChartJS.register(
   PointElement,
   LineElement,
   Filler,
-  LineController // Register line controller
+  LineController 
 );
 
 interface Trendline {
@@ -31,21 +30,21 @@ const props = defineProps({
 const chartRef = ref<HTMLCanvasElement | null>(null);
 let chart: Chart | null = null;
 
-// Function to create gradient for chart
-const createGradient = (ctx: CanvasRenderingContext2D, chartArea: { bottom: number, top: number }) => {
+const createGradient = (ctx: CanvasRenderingContext2D, chartArea: { bottom: number; top: number }) => {
+  if (!chartArea) return undefined; 
   const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
   gradient.addColorStop(0, 'rgba(75, 192, 192, 0.7)');
   gradient.addColorStop(1, 'rgba(75, 192, 192, 0.1)');
   return gradient;
 };
 
-// Initialize chart using async/await
+
 const initializeChart = async () => {
   if (chartRef.value) {
     const ctx = chartRef.value.getContext('2d');
     if (ctx) {
       if (chart) {
-        chart.destroy(); // Destroy the previous chart to avoid multiple instances
+        chart.destroy(); 
       }
 
       chart = new Chart(chartRef.value, {
@@ -57,13 +56,13 @@ const initializeChart = async () => {
               label: 'Revenue per Year',
               data: props.data.map((d) => d.revenue),
               borderColor: 'rgb(75, 192, 192)',
-              backgroundColor: (context) => {
-                const chart = context.chart;
-                const { ctx, chartArea } = chart;
-
-                if (!chartArea) return null;
-                return createGradient(ctx, chartArea);
+              backgroundColor: (context: ScriptableContext<'line'>) => {
+                const chart = context.chart; 
+                const chartArea = chart.chartArea;
+                if (!chartArea) return undefined;
+                return createGradient(chart.ctx, chartArea);
               },
+
               borderWidth: 3,
               pointBackgroundColor: 'rgb(75, 192, 192)',
               pointBorderColor: 'white',
@@ -72,7 +71,7 @@ const initializeChart = async () => {
               pointRadius: 6,
               pointHoverRadius: 8,
               fill: true,
-              tension: 0.4, // Adds curve to the line
+              tension: 0.4, 
             },
           ],
         },
@@ -117,7 +116,7 @@ const initializeChart = async () => {
             x: {
               grid: {
                 color: 'rgba(255, 255, 255, 0.1)',
-                borderColor: 'rgba(255, 255, 255, 0.2)',
+            
               },
               ticks: {
                 color: 'rgba(255, 255, 255, 0.7)',
@@ -129,7 +128,7 @@ const initializeChart = async () => {
             y: {
               grid: {
                 color: 'rgba(255, 255, 255, 0.1)',
-                borderColor: 'rgba(255, 255, 255, 0.2)',
+            
               },
               ticks: {
                 color: 'rgba(255, 255, 255, 0.7)',
@@ -144,7 +143,7 @@ const initializeChart = async () => {
                 },
               },
               beginAtZero: false,
-              min: 10000000, // Dynamic min with some padding
+              min: 10000000, 
             },
           },
           interaction: {
@@ -159,7 +158,6 @@ const initializeChart = async () => {
               const xAxis = chart.scales['x'];
               const yAxis = chart.scales['y'];
 
-              // Optional: Add vertical grid line with current year highlight
               const currentYear = new Date().getFullYear();
               const currentYearIndex = props.data.findIndex((d) => d.year === currentYear);
 
@@ -174,6 +172,7 @@ const initializeChart = async () => {
                 ctx.setLineDash([]);
               }
             },
+            id: ''
           },
         ],
       });
@@ -183,10 +182,9 @@ const initializeChart = async () => {
 
 onMounted(async () => {
   await nextTick();
-  await initializeChart(); // Wait for nextTick and then initialize chart
+  await initializeChart(); 
 });
 
-// Watch for data changes to update the chart
 watch(() => props.data, (newData) => {
   if (chart) {
     chart.data.labels = newData.map((d) => d.year.toString());
