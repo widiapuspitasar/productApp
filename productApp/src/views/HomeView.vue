@@ -80,7 +80,6 @@ onUnmounted( () =>{
         </div>
       </div>
       <div class="pt-8 w-1/2 h-1/2">
-        <!-- Example: Display Revenue Trendline -->
         <TrendlineChart :data="trendlineStore.trendlineData" />
       </div>
       <p>Target Percentage Achieved: {{ targetStore.targetPercentage.toFixed(2) }}%</p>

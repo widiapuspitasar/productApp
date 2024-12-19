@@ -21,18 +21,16 @@ interface Transaction {
 }
 
 export const useRevenueStore = defineStore('revenue', () => {
-  // State
   const transactions = ref<Transaction[]>([]);
   const repeatOrdersPercentage = ref<number>(0);
   const totalRevenue = ref<number>(0);
   const totalAov = ref<number>(0);
-  const totalCost = ref<number>(50000000); // Set your total cost value here
-  const profitMargin = ref<number>(0); // State for profit margin
+  const totalCost = ref<number>(50000000); 
+  const profitMargin = ref<number>(0); 
 
-  // Action to fetch transactions
   const fetchTransactions = async () => {
     try {
-      const response = await fetch('http://localhost:3000/transactions?_embed=product');
+      const response = await fetch('https://product-db-git-main-widiapuspitasars-projects.vercel.app/transactions?_expand=product');
       const data: Transaction[] = await response.json();
 
       console.log('Fetched Transactions:', data);
@@ -44,7 +42,6 @@ export const useRevenueStore = defineStore('revenue', () => {
     }
   };
 
-  // Calculate repeat orders, total revenue, and AOV
   const calculateRepeatOrdersAndRevenue = () => {
     const customerOrders = transactions.value.reduce((acc, transaction) => {
       if (!acc[transaction.customerId]) {
@@ -69,26 +66,22 @@ export const useRevenueStore = defineStore('revenue', () => {
 
     totalAov.value = totalRevenue.value / totalTransactions;
 
-    // Calculate profit margin
     if (totalRevenue.value > 0 && totalCost.value > 0) {
       const profit = totalRevenue.value - totalCost.value;
       profitMargin.value = (profit / totalRevenue.value) * 100;
     }
   };
 
-  // Getter to format revenue
   const getFormattedRevenue = (currency: string = 'USD') => {
     const utilsStore = useUtilsStore();
     return utilsStore.formatCurrency(totalRevenue.value, currency);
   };
 
-  // Getter to format AOV
   const getFormattedAov = (currency: string = 'USD') => {
     const utilsStore = useUtilsStore();
     return utilsStore.formatCurrency(totalAov.value, currency);
   };
 
-  // Getter to format profit margin
   const getFormattedProfitMargin = () => {
     return `${profitMargin.value.toFixed(2)}%`;
   };
